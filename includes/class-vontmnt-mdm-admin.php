@@ -55,8 +55,8 @@ class VONTMNT_MDM_Admin {
 	 */
 	public function admin_scripts() {
 		// custom assets.
-		wp_enqueue_style( 'VONTMNT_mdm_adminstyle', plugin_dir_url( __DIR__ ) . 'assets/css/admin.css', array(), $this->plugin->getPluginVersion() );
-		wp_register_script( 'VONTMNT_mdm_adminscript', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js', array( 'jquery', 'jquery-ui-accordion' ), $this->plugin->getPluginVersion(), true );
+		wp_enqueue_style( 'VONTMNT_mdm_adminstyle', plugin_dir_url( __DIR__ ) . 'assets/css/admin.css', array(), $this->plugin->get_plugin_version() );
+		wp_register_script( 'VONTMNT_mdm_adminscript', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js', array( 'jquery', 'jquery-ui-accordion' ), $this->plugin->get_plugin_version(), true );
 		wp_localize_script(
 			'VONTMNT_mdm_adminscript',
 			'localizedObj',
@@ -177,7 +177,7 @@ class VONTMNT_MDM_Admin {
 		endswitch;
 
 				// dynamic submit button.
-		if ( 'mappings' !== $active_tab || false === $this->saveMappingsButtonDisabled ) {
+		if ( 'mappings' !== $active_tab || false === $this->save_mappings_button_disabled ) {
 			// translators: %s: The name of the active tab (e.g., "Mappings" or "Settings").
 			submit_button( sprintf( esc_html__( 'Save %s', 'VONTMNT_mdm' ), $active_tab_name ) );
 		}
@@ -219,7 +219,7 @@ class VONTMNT_MDM_Admin {
 	 * Field callback for PHP server setting.
 	 */
 	public function field_settings_phpserver_callback() {
-		$options = $this->plugin->getSettings();
+		$options = $this->plugin->get_settings();
 		if ( empty( $options ) ) {
 			$options = array();
 		}
@@ -239,7 +239,7 @@ class VONTMNT_MDM_Admin {
 	 * Field callback for compatibility mode setting.
 	 */
 	public function field_settings_compatibilitymode_callback() {
-		$options = $this->plugin->getSettings();
+		$options = $this->plugin->get_settings();
 		if ( empty( $options ) ) {
 			$options = array();
 		}
@@ -265,7 +265,7 @@ class VONTMNT_MDM_Admin {
 	 * Field callback for mappings URIs.
 	 */
 	public function field_mappings_uris_callback() {
-		$options = $this->plugin->getMappings();
+		$options = $this->plugin->get_mappings();
 		if ( empty( $options ) ) {
 			$options = array();
 		}
@@ -306,7 +306,7 @@ class VONTMNT_MDM_Admin {
 		// calculate and maybe show warning for higher max_input_vars needed.
 		$number_of_settings = 3; // this must be changed when additional input fields emerge.
 		if ( $cnt >= ( intval( ini_get( 'max_input_vars' ) ) / $number_of_settings - 100 ) ) {
-			$this->saveMappingsButtonDisabled = true;
+			$this->save_mappings_button_disabled = true;
 			echo '<section class="notice notice-error">';
 				echo '<p>';
 					// translators: 1: max_input_vars value, 2: <em>max_input_vars</em>, 3: number of mappings, 4: input vars per mapping, 5: total input vars, 6: <em>max_input_vars</em>.

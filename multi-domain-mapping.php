@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.InvalidClassFileName
 /**
  * Plugin Name: Multiple Domain Mapping
  * Plugin URI:  https://wordpress.org/plugins/multiple--on-single-site/
@@ -38,8 +38,8 @@ if ( ! defined( 'PHP_INT_MIN' ) ) {
 
 // Load our classes.
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-vontmnt-mdm-admin.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mdm-core.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mdm-replacer.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-vontmnt-mdm-core.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-vontmnt-mdm-replacer.php';
 
 if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 	/**
@@ -105,19 +105,19 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @var string|false
 		 */
-		private $originalRequestURI = false;
+		private $original_request_uri = false;
 		/**
 		 * Current URI.
 		 *
 		 * @var string|false
 		 */
-		private $currentURI = false;
+		private $current_uri = false;
 		/**
 		 * Current mapping configuration.
 		 *
 		 * @var array
 		 */
-		private $currentMapping = array(
+		private $current_mapping = array(
 			'match'  => false,
 			'factor' => PHP_INT_MIN,
 		);
@@ -126,13 +126,13 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @var bool
 		 */
-		private $saveMappingsButtonDisabled = false;
+		private $save_mappings_button_disabled = false;
 		/**
 		 * Plugin version.
 		 *
 		 * @var string
 		 */
-		private $pluginVersion = '1.1.1';
+		private $plugin_version = '1.1.1';
 
 		/**
 		 * Constructor.
@@ -143,8 +143,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/upgrades/v-1-0.php';
 
 			// Retrieve options.
-			$this->setMappings( get_option( 'VONTMNT_mdm_mappings' ) );
-			$this->setSettings( get_option( 'VONTMNT_mdm_settings' ) );
+			$this->set_mappings( get_option( 'VONTMNT_mdm_mappings' ) );
+			$this->set_settings( get_option( 'VONTMNT_mdm_settings' ) );
 
 			// Initialize components.
 			$this->core     = new VONTMNT_MDM_Core( $this );
@@ -155,10 +155,10 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			add_action( 'plugins_loaded', array( $this, 'set_textdomain' ) );
 
 			// Set current uri.
-			$this->setCurrentURI( $_SERVER[ ( ! empty( $this->getSettings() ) && isset( $this->getSettings()['php_server'] ) ) ? $this->getSettings()['php_server'] : 'SERVER_NAME' ] . $_SERVER['REQUEST_URI'] );
+			$this->set_current_uri( $_SERVER[ ( ! empty( $this->get_settings() ) && isset( $this->get_settings()['php_server'] ) ) ? $this->get_settings()['php_server'] : 'SERVER_NAME' ] . $_SERVER['REQUEST_URI'] );
 
 			// Hook some stuff into our own actions.
-			add_action( 'plugins_loaded', array( $this, 'hookMDMAction' ), 20 );
+			add_action( 'plugins_loaded', array( $this, 'hook_mdm_action' ), 20 );
 
 			// HTML head.
 			add_action( 'wp_head', array( $this, 'output_custom_head_code' ), 20 );
@@ -173,7 +173,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @param array|false $mappings The mappings array.
 		 */
-		public function setMappings( $mappings ) {
+		public function set_mappings( $mappings ) {
 			$this->mappings = $mappings;
 		}
 
@@ -182,7 +182,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return array|false
 		 */
-		public function getMappings() {
+		public function get_mappings() {
 			return $this->mappings;
 		}
 
@@ -191,7 +191,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @param array|false $settings The settings array.
 		 */
-		public function setSettings( $settings ) {
+		public function set_settings( $settings ) {
 			$this->settings = $settings;
 		}
 
@@ -200,7 +200,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return array|false
 		 */
-		public function getSettings() {
+		public function get_settings() {
 			return $this->settings;
 		}
 
@@ -209,8 +209,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @param string $uri The URI to set.
 		 */
-		public function setCurrentURI( $uri ) {
-			$this->currentURI = trailingslashit( $uri );
+		public function set_current_uri( $uri ) {
+			$this->current_uri = trailingslashit( $uri );
 		}
 
 		/**
@@ -218,8 +218,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return string|false
 		 */
-		public function getCurrentURI() {
-			return $this->currentURI;
+		public function get_current_uri() {
+			return $this->current_uri;
 		}
 
 		/**
@@ -227,8 +227,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @param array $mapping The mapping array.
 		 */
-		public function setCurrentMapping( $mapping ) {
-			$this->currentMapping = $mapping;
+		public function set_current_mapping( $mapping ) {
+			$this->current_mapping = $mapping;
 		}
 
 		/**
@@ -236,8 +236,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return array
 		 */
-		public function getCurrentMapping() {
-			return $this->currentMapping;
+		public function get_current_mapping() {
+			return $this->current_mapping;
 		}
 
 		/**
@@ -245,8 +245,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @param string $uri The URI to set.
 		 */
-		public function setOriginalRequestURI( $uri ) {
-			$this->originalRequestURI = $uri;
+		public function set_original_request_uri( $uri ) {
+			$this->original_request_uri = $uri;
 		}
 
 		/**
@@ -254,8 +254,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return string|false
 		 */
-		public function getOriginalRequestURI() {
-			return $this->originalRequestURI;
+		public function get_original_request_uri() {
+			return $this->original_request_uri;
 		}
 
 		/**
@@ -263,7 +263,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return string
 		 */
-		public function getOriginalURI() {
+		public function get_original_uri() {
 			global $wp;
 			return home_url( $wp->request );
 		}
@@ -273,8 +273,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return string
 		 */
-		public function getPluginVersion() {
-			return $this->pluginVersion;
+		public function get_plugin_version() {
+			return $this->plugin_version;
 		}
 
 		/**
@@ -282,7 +282,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return VONTMNT_MDM_Core
 		 */
-		public function getCore() {
+		public function get_core() {
 			return $this->core;
 		}
 
@@ -291,7 +291,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return VONTMNT_MDM_Admin
 		 */
-		public function getAdmin() {
+		public function get_admin() {
 			return $this->admin;
 		}
 
@@ -300,7 +300,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 *
 		 * @return VONTMNT_MDM_Replacer
 		 */
-		public function getReplacer() {
+		public function get_replacer() {
 			return $this->replacer;
 		}
 
@@ -353,31 +353,31 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 					if ( '' !== $domain ) {
 
 						// validate inputs.
-						$parsedDomain = wp_parse_url( $domain );
-						$parsedPath   = wp_parse_url( $path );
-						if ( false !== $parsedDomain && false !== $parsedPath ) {
+						$parsed_domain = wp_parse_url( $domain );
+						$parsed_path   = wp_parse_url( $path );
+						if ( false !== $parsed_domain && false !== $parsed_path ) {
 
 							// if we get only the host-representation we temporary add a protocol, so we can use the benefit from parse_url to strip the query.
 							// note: this will also be run for each already saved mapping, since we strip the protocol on save...
-							if ( ! isset( $parsedDomain['host'] ) ) {
-								$parsedDomain = wp_parse_url( 'dummyprotocol://' . $domain );
+							if ( ! isset( $parsed_domain['host'] ) ) {
+								$parsed_domain = wp_parse_url( 'dummyprotocol://' . $domain );
 							}
 
 							// save only host name (and path, if provided) with stripped slashes.
-							$trimmedDomainPath = trim( trim( ( isset( $parsedDomain['path'] ) ? $parsedDomain['path'] : '' ) ), '/' );
-							$val['domain']     = trim( trim( isset( $parsedDomain['host'] ) ? $parsedDomain['host'] : '' ), '/' ) . ( ! empty( $trimmedDomainPath ) ? '/' . $trimmedDomainPath : '' );
+							$trimmed_domain_path = trim( trim( ( isset( $parsed_domain['path'] ) ? $parsed_domain['path'] : '' ) ), '/' );
+							$val['domain']       = trim( trim( isset( $parsed_domain['host'] ) ? $parsed_domain['host'] : '' ), '/' ) . ( ! empty( $trimmed_domain_path ) ? '/' . $trimmed_domain_path : '' );
 
 							// save path with leading slash.
 							$val['path'] = '/' . $path;
 
 							// iterate over existing mappings and check, if this path has already been used.
-							$saveMapping = true;
-							foreach ( $mappings as $existingMapping ) {
-								if ( $existingMapping['path'] === $val['path'] ) {
-									$saveMapping = false;
+							$save_mapping = true;
+							foreach ( $mappings as $existing_mapping ) {
+								if ( $existing_mapping['path'] === $val['path'] ) {
+									$save_mapping = false;
 								}
-								if ( str_ireplace( 'www.', '', $existingMapping['domain'] ) === str_ireplace( 'www.', '', $val['domain'] ) ) {
-									$saveMapping = false;
+								if ( str_ireplace( 'www.', '', $existing_mapping['domain'] ) === str_ireplace( 'www.', '', $val['domain'] ) ) {
+									$save_mapping = false;
 								}
 							}
 
@@ -391,7 +391,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 								$val['redirection'] = intval( $val['redirection'] );
 							}
 
-							if ( $saveMapping ) {
+							if ( $save_mapping ) {
 								// mapping should be saved and is filtered before.
 								// use domain as index, so we do not have any duplicates -> this index will never be used or stored, but we convert it to md5 so it can not be confusing later.
 								$mappings[ md5( $val['domain'] ) ] = apply_filters( 'vontmnt_mdmf_save_mapping', $val );
@@ -438,7 +438,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		/**
 		 * Hook into some of our own defined actions.
 		 */
-		public function hookMDMAction() {
+		public function hook_mdm_action() {
 			add_action( 'vontmnt_mdma_after_mapping_body', array( $this->admin, 'render_advanced_mapping_inputs' ), 10, 2 );
 		}
 
@@ -446,14 +446,14 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		 * Check if custom head code is defined for this mapping and output it with html entities decoded, if so.
 		 */
 		public function output_custom_head_code() {
-			if ( ! empty( $this->getCurrentMapping()['match'] ) ) {
-				if ( ! empty( $this->getCurrentMapping()['match']['customheadcode'] ) ) {
+			if ( ! empty( $this->get_current_mapping()['match'] ) ) {
+				if ( ! empty( $this->get_current_mapping()['match']['customheadcode'] ) ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped.
-					echo wp_kses_post( html_entity_decode( $this->getCurrentMapping()['match']['customheadcode'] ) );
+					echo wp_kses_post( html_entity_decode( $this->get_current_mapping()['match']['customheadcode'] ) );
 				}
 			}
 		}
 	}
 
-	$VONTMNT_MultipleDomainMapping = VONTMNT_MultipleDomainMapping::get_instance();
+	$vontmnt_multiple_domain_mapping = VONTMNT_MultipleDomainMapping::get_instance();
 }

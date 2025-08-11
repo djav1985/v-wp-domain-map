@@ -47,7 +47,7 @@ class VONTMNT_MDM_Replacer {
 	 */
 	private function replace_uris() {
 		// retrieve settings for compatibility mode.
-		$options = $this->plugin->getSettings();
+		$options = $this->plugin->get_settings();
 		if ( empty( $options ) ) {
 			$options = array();
 		}
@@ -107,41 +107,41 @@ class VONTMNT_MDM_Replacer {
 	/**
 	 * All the helpers for the above filters.
 	 *
-	 * @param string $originalURI The original URI.
+	 * @param string $original_uri The original URI.
 	 * @return string
 	 */
-	public function replace_uri( $originalURI ) {
+	public function replace_uri( $original_uri ) {
 
 		// loop mappings and compare match of mapping against each other.
-		$mappings = $this->plugin->getMappings();
+		$mappings = $this->plugin->get_mappings();
 		if ( ! empty( $mappings ) && isset( $mappings['mappings'] ) && ! empty( $mappings['mappings'] ) ) {
 
-			$bestMatch = array(
+			$best_match = array(
 				'match'  => false,
 				'factor' => PHP_INT_MIN,
 			);
 
 			foreach ( $mappings['mappings'] as $mapping ) {
 				// first use our standard matching function.
-				$matchCompare = $this->plugin->getCore()->uri_match( $originalURI, $mapping, false );
+				$match_compare = $this->plugin->get_core()->uri_match( $original_uri, $mapping, false );
 				// then enable custom matching by filtering.
-				$matchCompare = apply_filters( 'vontmnt_mdmf_uri_match', $matchCompare, $originalURI, $mapping, false );
+				$match_compare = apply_filters( 'vontmnt_mdmf_uri_match', $match_compare, $original_uri, $mapping, false );
 
 				// if the current mapping fits better, use this instead the previous one.
-				if ( false !== $matchCompare && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $bestMatch['factor'] ) {
-					$bestMatch = $matchCompare;
+				if ( false !== $match_compare && isset( $match_compare['factor'] ) && $match_compare['factor'] > $best_match['factor'] ) {
+					$best_match = $match_compare;
 				}
 			}
 
 			// we have a matching mapping -> let the magic happen.
-			if ( ! empty( $bestMatch['match'] ) ) {
-				$uriParsed = wp_parse_url( $originalURI );
-				$newURI    = str_ireplace( trailingslashit( $uriParsed['host'] . $bestMatch['match']['path'] ), trailingslashit( $bestMatch['match']['domain'] ), $originalURI );
-				return apply_filters( 'vontmnt_mdmf_filtered_uri', $newURI, $originalURI, $bestMatch );
+			if ( ! empty( $best_match['match'] ) ) {
+				$uri_parsed = wp_parse_url( $original_uri );
+				$new_uri    = str_ireplace( trailingslashit( $uri_parsed['host'] . $best_match['match']['path'] ), trailingslashit( $best_match['match']['domain'] ), $original_uri );
+				return apply_filters( 'vontmnt_mdmf_filtered_uri', $new_uri, $original_uri, $best_match );
 			}
 		}
 
-		return $originalURI;
+		return $original_uri;
 	}
 
 	/**
@@ -153,32 +153,32 @@ class VONTMNT_MDM_Replacer {
 	public function unreplace_uri( $mapped_uri ) {
 
 		// loop mappings and compare match of mapping against each other.
-		$mappings = $this->plugin->getMappings();
+		$mappings = $this->plugin->get_mappings();
 		if ( ! empty( $mappings ) && isset( $mappings['mappings'] ) && ! empty( $mappings['mappings'] ) ) {
 
-			$bestMatch = array(
+			$best_match = array(
 				'match'  => false,
 				'factor' => PHP_INT_MIN,
 			);
 
 			foreach ( $mappings['mappings'] as $mapping ) {
 				// first use our standard matching function.
-				$matchCompare = $this->plugin->getCore()->uri_match( $mapped_uri, $mapping, true );
+				$match_compare = $this->plugin->get_core()->uri_match( $mapped_uri, $mapping, true );
 
 				// then enable custom matching by filtering.
-				$matchCompare = apply_filters( 'vontmnt_mdmf_uri_match', $matchCompare, $mapped_uri, $mapping, true );
+				$match_compare = apply_filters( 'vontmnt_mdmf_uri_match', $match_compare, $mapped_uri, $mapping, true );
 
 				// if the current mapping fits better, use this instead the previous one.
-				if ( false !== $matchCompare && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $bestMatch['factor'] ) {
-					$bestMatch = $matchCompare;
+				if ( false !== $match_compare && isset( $match_compare['factor'] ) && $match_compare['factor'] > $best_match['factor'] ) {
+					$best_match = $match_compare;
 				}
 			}
 
 			// we have a matching mapping -> let the magic happen.
-			if ( ! empty( $bestMatch['match'] ) ) {
-				$uriParsed = wp_parse_url( $mapped_uri );
-				$newURI    = str_ireplace( $uriParsed['host'], wp_parse_url( get_home_url() )['host'] . $bestMatch['match']['path'], $mapped_uri );
-				return apply_filters( 'vontmnt_mdmf_filtered_uri', $newURI, $mapped_uri, $bestMatch );
+			if ( ! empty( $best_match['match'] ) ) {
+				$uri_parsed = wp_parse_url( $mapped_uri );
+				$new_uri    = str_ireplace( $uri_parsed['host'], wp_parse_url( get_home_url() )['host'] . $best_match['match']['path'], $mapped_uri );
+				return apply_filters( 'vontmnt_mdmf_filtered_uri', $new_uri, $mapped_uri, $best_match );
 			}
 		}
 
@@ -237,7 +237,7 @@ class VONTMNT_MDM_Replacer {
 	 */
 	public function replace_domain( $input ) {
 		// check if we are on a mapped page and replace original domain with mapped domain.
-		if ( ! empty( $this->plugin->getCurrentMapping()['match'] ) ) {
+		if ( ! empty( $this->plugin->get_current_mapping()['match'] ) ) {
 			// we need to make sure that we only replace right at the beginning (after the protocol), so we do not destroy subdomains (like img.mydomain.com). that is why we add the :// to the strings.
 			// and we also need to be sure that we do not replace it in a hyperlink which leads to any page on our original domain or to the home page itelsf. so we add a pregex which needs to have any character, a dot and again any character before the next ". that should do the trick....
 			$preg_host = preg_quote( wp_parse_url( get_site_url() )['host'], '/' );
@@ -260,9 +260,9 @@ class VONTMNT_MDM_Replacer {
 		}
 
 		// check if we are on a mapped page and replace original domain with mapped domain.
-		if ( ! empty( $this->plugin->getCurrentMapping()['match'] ) ) {
+		if ( ! empty( $this->plugin->get_current_mapping()['match'] ) ) {
 			// we need to make sure that we only replace right at the beginning (after the protocol), so we do not destroy subdomains (like img.mydomain.com). that is why we add the :// to the strings.
-			return str_ireplace( '://' . wp_parse_url( get_site_url() )['host'], '://' . wp_parse_url( 'dummyprotocol://' . $this->plugin->getCurrentMapping()['match']['domain'] )['host'], $input );
+			return str_ireplace( '://' . wp_parse_url( get_site_url() )['host'], '://' . wp_parse_url( 'dummyprotocol://' . $this->plugin->get_current_mapping()['match']['domain'] )['host'], $input );
 		}
 
 		return $input;

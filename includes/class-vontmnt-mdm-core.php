@@ -51,7 +51,7 @@ class VONTMNT_MDM_Core {
 	 */
 	public function parse_request( $do_parse ) {
 		// store current request uri as fallback for the originalRequestURI variable, no matter if we have a match or not.
-		$this->plugin->setOriginalRequestURI( $_SERVER['REQUEST_URI'] );
+		$this->plugin->set_original_request_uri( $_SERVER['REQUEST_URI'] );
 
 		// definitely no request-mapping in backend.
 		if ( is_admin() ) {
@@ -59,29 +59,29 @@ class VONTMNT_MDM_Core {
 		}
 
 		// loop mappings and compare match of mapping against each other.
-		$mappings = $this->plugin->getMappings();
+		$mappings = $this->plugin->get_mappings();
 		if ( ! empty( $mappings ) && isset( $mappings['mappings'] ) && ! empty( $mappings['mappings'] ) ) {
 
 			foreach ( $mappings['mappings'] as $mapping ) {
 				// first use our standard matching function.
-				$matchCompare = $this->uri_match( $this->plugin->getCurrentURI(), $mapping, true );
+				$match_compare = $this->uri_match( $this->plugin->get_current_uri(), $mapping, true );
 				// then enable custom matching by filtering.
-				$matchCompare = apply_filters( 'vontmnt_mdmf_uri_match', $matchCompare, $this->plugin->getCurrentURI(), $mapping, true );
+				$match_compare = apply_filters( 'vontmnt_mdmf_uri_match', $match_compare, $this->plugin->get_current_uri(), $mapping, true );
 
 				// if the current mapping fits better, use this instead the previous one.
-				if ( false !== $matchCompare && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $this->plugin->getCurrentMapping()['factor'] ) {
-					$this->plugin->setCurrentMapping( $matchCompare );
+				if ( false !== $match_compare && isset( $match_compare['factor'] ) && $match_compare['factor'] > $this->plugin->get_current_mapping()['factor'] ) {
+					$this->plugin->set_current_mapping( $match_compare );
 				}
 			}
 
 			// we have a matching mapping -> let the magic happen.
-			if ( ! empty( $this->plugin->getCurrentMapping()['match'] ) ) {
+			if ( ! empty( $this->plugin->get_current_mapping()['match'] ) ) {
 				// store original request uri.
-				$this->plugin->setOriginalRequestURI( $_SERVER['REQUEST_URI'] );
+				$this->plugin->set_original_request_uri( $_SERVER['REQUEST_URI'] );
 				// set request uri to our original mapping path AND if we have a longer query, we need to append it.
-				$newRequestURI = trailingslashit( $this->plugin->getCurrentMapping()['match']['path'] . substr( str_ireplace( 'www.', '', $this->plugin->getCurrentURI() ), strlen( str_ireplace( 'www.', '', $this->plugin->getCurrentMapping()['match']['domain'] ) ) ) );
+				$new_request_uri = trailingslashit( $this->plugin->get_current_mapping()['match']['path'] . substr( str_ireplace( 'www.', '', $this->plugin->get_current_uri() ), strlen( str_ireplace( 'www.', '', $this->plugin->get_current_mapping()['match']['domain'] ) ) ) );
 				// enable additional filtering on the request_uri.
-				$_SERVER['REQUEST_URI'] = apply_filters( 'vontmnt_mdmf_request_uri', $newRequestURI, $this->plugin->getCurrentURI(), $this->plugin->getCurrentMapping() );
+				$_SERVER['REQUEST_URI'] = apply_filters( 'vontmnt_mdmf_request_uri', $new_request_uri, $this->plugin->get_current_uri(), $this->plugin->get_current_mapping() );
 			}
 		}
 
@@ -99,33 +99,33 @@ class VONTMNT_MDM_Core {
 	public function check_canonical_redirect( $redirect_url, $requested_url ) {
 
 		// are we on a mapped page?.
-		if ( false !== $this->plugin->getCurrentMapping()['match'] ) {
+		if ( false !== $this->plugin->get_current_mapping()['match'] ) {
 
 			// parse the urls.
-			$parsedRedirectUrl  = wp_parse_url( $redirect_url );
-			$parsedRequestedUrl = wp_parse_url( $requested_url );
+			$parsed_redirect_url  = wp_parse_url( $redirect_url );
+			$parsed_requested_url = wp_parse_url( $requested_url );
 
 			// if we have a slug in the domain-part of our mapping like test.com/ball <=> /sports/ball.
-			$explodedMappingDomain = explode( '/', $this->plugin->getCurrentMapping()['match']['domain'] );
-			if ( count( $explodedMappingDomain ) > 1 ) {
+			$exploded_mapping_domain = explode( '/', $this->plugin->get_current_mapping()['match']['domain'] );
+			if ( count( $exploded_mapping_domain ) > 1 ) {
 
 				// we need to cut out these slug-parts from the parsedRedirectUrl-path.
-				$explodedRedirectUrlPath = explode( '/', $parsedRedirectUrl['path'] );
+				$exploded_redirect_url_path = explode( '/', $parsed_redirect_url['path'] );
 
 				// but only as long as they "overlap" (like the "ball"-sequence in the example above).
-				$exploded_mapping_domain_count = count( $explodedMappingDomain );
+				$exploded_mapping_domain_count = count( $exploded_mapping_domain );
 				for ( $i = 1; $i < $exploded_mapping_domain_count; $i++ ) {
-					if ( isset( $explodedRedirectUrlPath[ $i ] ) && $explodedRedirectUrlPath[ $i ] === $explodedMappingDomain[ $i ] ) {
-						unset( $explodedRedirectUrlPath[ $i ] );
+					if ( isset( $exploded_redirect_url_path[ $i ] ) && $exploded_redirect_url_path[ $i ] === $exploded_mapping_domain[ $i ] ) {
+						unset( $exploded_redirect_url_path[ $i ] );
 					}
 				}
 
 				// stick the path together again.
-				$parsedRedirectUrl['path'] = implode( '/', $explodedRedirectUrlPath );
+				$parsed_redirect_url['path'] = implode( '/', $exploded_redirect_url_path );
 			}
 
 			// now compare if those two urls are the same, and skip this redirect if so.
-			if ( trailingslashit( $this->plugin->getCurrentMapping()['match']['path'] . $parsedRedirectUrl['path'] ) === trailingslashit( $parsedRequestedUrl['path'] ) ) {
+			if ( trailingslashit( $this->plugin->get_current_mapping()['match']['path'] . $parsed_redirect_url['path'] ) === trailingslashit( $parsed_requested_url['path'] ) ) {
 				return false;
 			}
 		}
@@ -152,16 +152,16 @@ class VONTMNT_MDM_Core {
 
 		// do we check match at parsing the site or when replacing uris in the page?.
 		if ( $reverse ) {
-			$arg2               = str_ireplace( 'www.', '', $mapping['domain'] );
-			$matchingPosCompare = 0;
+			$arg2                 = str_ireplace( 'www.', '', $mapping['domain'] );
+			$matching_pos_compare = 0;
 		} else {
-			$arg2               = $mapping['path'];
-			$matchingPosCompare = strlen( str_ireplace( 'http://', '', str_ireplace( 'https://', '', str_ireplace( 'www.', '', get_home_url() ) ) ) );
+			$arg2                 = $mapping['path'];
+			$matching_pos_compare = strlen( str_ireplace( 'http://', '', str_ireplace( 'https://', '', str_ireplace( 'www.', '', get_home_url() ) ) ) );
 		}
 
 		// check if arg2 is part of uri and starts where we want to.
-		$matchingPos = stripos( trailingslashit( $uri ), trailingslashit( $arg2 ) );
-		if ( false !== $matchingPos && $matchingPosCompare === $matchingPos ) {
+		$matching_pos = stripos( trailingslashit( $uri ), trailingslashit( $arg2 ) );
+		if ( false !== $matching_pos && $matching_pos_compare === $matching_pos ) {
 			// use length of match as factor.
 			return array(
 				'match'  => $mapping,
