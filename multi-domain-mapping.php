@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Multiple Domain Mapping on single site
+ * Plugin Name: Multiple Domain Mapping 
  * Plugin URI:  https://wordpress.org/plugins/multiple--on-single-site/
  * Description: Show specific posts, pages, ... within their own, additional domains. Useful for SEO: different domains for landingpages.
  * Version:     1.1.1
@@ -13,18 +13,18 @@
  *
  * @package VONTMNT_mdm
  *
- * Multiple Domain Mapping on single site is free software: you can redistribute it and/or modify
+ * Multiple Domain Mapping  is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
  * any later version.
  *
- * Multiple Domain Mapping on single site is distributed in the hope that it will be useful,
+ * Multiple Domain Mapping  is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Multiple Domain Mapping on single site. If not, see https://www.gnu.org/licenses/gpl-2.0.html.
+ * along with Multiple Domain Mapping . If not, see https://www.gnu.org/licenses/gpl-2.0.html.
  */
 
 // If this file is called directly, abort.
@@ -129,7 +129,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			$this->setCurrentURI( $_SERVER[ ( ! empty( $this->getSettings() ) && isset( $this->getSettings()['php_server'] ) ) ? $this->getSettings()['php_server'] : 'SERVER_NAME' ] . $_SERVER['REQUEST_URI'] );
 
 			// Process request.
-			add_filter( 'do_parse_request', array( $this, 'parse_request' ), 10, 3 );
+			add_filter( 'do_parse_request', array( $this, 'parse_request' ), 10, 1 );
 			add_filter( 'redirect_canonical', array( $this, 'check_canonical_redirect' ), 10, 2 );
 
 			// Some hooks to change occurences of orignal domain to mapped domain.
@@ -511,6 +511,9 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 		/**
 		 * Function to show additional input fields in mapping body.
+		 *
+		 * @param int|string $cnt The mapping counter.
+		 * @param array|bool $mapping The mapping array.
 		 */
 		public function render_advanced_mapping_inputs( $cnt, $mapping ) {
 			if ( $cnt === 'new' ) {
@@ -525,6 +528,9 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 		/**
 		 * Sanitize options fields input.
+		 *
+		 * @param array $options The options array.
+		 * @return array
 		 */
 		public function sanitize_settings_group( $options ) {
 			if ( empty( $options ) ) {
@@ -637,8 +643,11 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 		/**
 		 * Change the request, check for matching mappings.
+		 *
+		 * @param bool $do_parse Whether to parse the request.
+		 * @return bool
 		 */
-		public function parse_request( $do_parse, $_instance, $_extra_query_vars ) {
+		public function parse_request( $do_parse ) {
 			// store current request uri as fallback for the originalRequestURI variable, no matter if we have a match or not.
 			$this->setOriginalRequestURI( $_SERVER['REQUEST_URI'] );
 
@@ -680,6 +689,10 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		/**
 		 * Hook into the canonical redirect to avoid infinite redirection loops.
 		 * So far we only know that this is necessary for paged posts (nextpage-tag), which result in redirect loops otherwise.
+		 *
+		 * @param string $redirect_url The redirect URL.
+		 * @param string $requested_url The requested URL.
+		 * @return string|false
 		 */
 		public function check_canonical_redirect( $redirect_url, $requested_url ) {
 
@@ -702,7 +715,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 				for ( $i = 1; $i < $exploded_mapping_domain_count; $i++ ) {
 						if ( isset( $explodedRedirectUrlPath[ $i ] ) && $explodedRedirectUrlPath[ $i ] === $explodedMappingDomain[ $i ] ) {
 							unset( $explodedRedirectUrlPath[ $i ] );
-						}
+							}
 					}
 
 					// stick the path together again.
@@ -721,6 +734,11 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 		/**
 		 * Standard function to check an uri against a mapping.
+		 *
+		 * @param string     $uri The URI to check.
+		 * @param array      $mapping The mapping to check against.
+		 * @param bool|false $reverse Whether to reverse the check.
+		 * @return array|false
 		 */
 		private function uriMatch( $uri, $mapping, $reverse = false ) {
 
@@ -806,14 +824,17 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			}
 
 			// yoast sitemaps.
-			add_filter( 'wpseo_xml_sitemap_post_url', array( $this, 'replace_yoast_xml_sitemap_post_url' ), 0, 2 );
-			add_filter( 'wpseo_sitemap_entry', array( $this, 'replace_yoast_sitemap_entry' ), 10, 3 );
+			add_filter( 'wpseo_xml_sitemap_post_url', array( $this, 'replace_yoast_xml_sitemap_post_url' ), 0, 1 );
+			add_filter( 'wpseo_sitemap_entry', array( $this, 'replace_yoast_sitemap_entry' ), 10, 2 );
 
 			// elementor preview url.
 			add_filter( 'elementor/document/urls/preview', array( $this, 'replace_elementor_preview_url' ) );
 		}
 		/**
 		 * All the helpers for the above filters.
+		 *
+		 * @param string $originalURI The original URI.
+		 * @return string
 		 */
 		public function replace_uri( $originalURI ) {
 
@@ -930,7 +951,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 			return $input;
 		}
-		public function replace_yoast_xml_sitemap_post_url( $url, $_post ) {
+		public function replace_yoast_xml_sitemap_post_url( $url ) {
 			// add home url to the posturl, so YOAST will not handle the post like an external url.
 			// this is stripped again in the next filter.
 			if ( trailingslashit( get_home_url() ) !== trailingslashit( $url ) ) {
@@ -938,7 +959,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			}
 			return $url;
 		}
-		public function replace_yoast_sitemap_entry( $url, $type, $_post ) {
+		public function replace_yoast_sitemap_entry( $url, $type ) {
 			// true for all post types.
 			if ( $type === 'post' ) {
 				if ( false !== strpos( $url['loc'], '\\' ) ) {

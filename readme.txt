@@ -1,4 +1,4 @@
-=== Multiple Domain Mapping on Single Site ===
+=== Multiple Domain Mapping  ===
 Contributors:  matthias.wagner
 Donate link: https://www.matthias-wagner.at
 Tags: multidomain, landingpage, redirect, domainmapping, mapping, multiple, domain, single, site, seo, marketing, mirror

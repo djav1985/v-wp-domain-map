@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall script for Multiple Domain Mapping on single site plugin.
+ * Uninstall script for Multiple Domain Mapping  plugin.
  * Removes plugin options from the database.
  *
  * @package   VONTMNT_mdm
