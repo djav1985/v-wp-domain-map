@@ -289,9 +289,9 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 				return;
 			}
 
-			// find out active tab
-			$active_tab      = ( isset( $_GET['tab'] ) && $_GET['tab'] == 'settings' ) ? $_GET['tab'] : 'mappings';
-			$active_tab_name = ( isset( $_GET['tab'] ) && $_GET['tab'] == 'settings' ) ? ucfirst( $_GET['tab'] ) : esc_html__( 'Mappings', 'VONTMNT_mdm' );
+			// Find out active tab.
+			$active_tab      = ( isset( $_GET['tab'] ) && 'settings' === $_GET['tab'] ) ? $_GET['tab'] : 'mappings';
+			$active_tab_name = ( isset( $_GET['tab'] ) && 'settings' === $_GET['tab'] ) ? ucfirst( $_GET['tab'] ) : esc_html__( 'Mappings', 'VONTMNT_mdm' );
 
 			echo '<div class="wrap VONTMNT_mdm_wrap">';
 
