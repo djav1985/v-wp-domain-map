@@ -280,7 +280,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			if ( ! current_user_can( 'manage_options' ) ) {
 				return;
 			}
-			add_submenu_page( 'tools.php', esc_html__( 'Multiple Domain Mapping on single site', 'VONTMNT_mdm' ), esc_html__( 'Multidomain', 'VONTMNT_mdm' ), 'manage_options', plugin_basename( __FILE__ ), array( $this, 'output_menu_page' ) );
+			add_submenu_page( 'tools.php', esc_html__( 'Multiple Domain Mapping on single site', 'VONTMNT_mdm' ), esc_html__( 'Multidomain', 'VONTMNT_mdm' ), 'manage_options', 'vontmnt-multidomain-mapping', array( $this, 'output_menu_page' ) );
 			$this->register_settings();
 		}
 
@@ -294,8 +294,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			}
 
 			// Find out active tab.
-			$active_tab      = ( isset( $_GET['tab'] ) && 'settings' === $_GET['tab'] ) ? $_GET['tab'] : 'mappings';
-			$active_tab_name = ( isset( $_GET['tab'] ) && 'settings' === $_GET['tab'] ) ? ucfirst( $_GET['tab'] ) : esc_html__( 'Mappings', 'VONTMNT_mdm' );
+			$active_tab      = ( isset( $_GET['tab'] ) && 'settings' === sanitize_text_field( wp_unslash( $_GET['tab'] ) ) ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'mappings'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$active_tab_name = ( isset( $_GET['tab'] ) && 'settings' === sanitize_text_field( wp_unslash( $_GET['tab'] ) ) ) ? ucfirst( sanitize_text_field( wp_unslash( $_GET['tab'] ) ) ) : esc_html__( 'Mappings', 'VONTMNT_mdm' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 			echo '<div class="wrap VONTMNT_mdm_wrap">';
 
@@ -303,7 +303,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 				echo '<h1>' . get_admin_page_title() . '</h1>';
 
 				// updated notices.
-			if ( isset( $_GET['settings-updated'] ) ) {
+			if ( isset( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_message', sprintf( esc_html__( '%s saved', 'VONTMNT_mdm' ), $active_tab_name ), 'updated' );
 
 				// flush rewrite rules on each update of our settings/mappings, just to be sure...
@@ -317,8 +317,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 				// tabs.
 				echo '<h2 class="nav-tab-wrapper">';
-					echo '<a href="?page=' . plugin_basename( __FILE__ ) . '&amp;tab=mappings" class="nav-tab ' . ( $active_tab == 'mappings' ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Mappings', 'VONTMNT_mdm' ) . '</a>';
-					echo '<a href="?page=' . plugin_basename( __FILE__ ) . '&amp;tab=settings" class="nav-tab ' . ( $active_tab == 'settings' ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Settings', 'VONTMNT_mdm' ) . '</a>';
+					echo '<a href="?page=vontmnt-multidomain-mapping&amp;tab=mappings" class="nav-tab ' . ( $active_tab === 'mappings' ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Mappings', 'VONTMNT_mdm' ) . '</a>';
+					echo '<a href="?page=vontmnt-multidomain-mapping&amp;tab=settings" class="nav-tab ' . ( $active_tab === 'settings' ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Settings', 'VONTMNT_mdm' ) . '</a>';
 				echo '</h2>';
 
 				// main form.
@@ -380,7 +380,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			}
 
 					// dynamic submit button.
-			if ( $active_tab != 'mappings' || $this->saveMappingsButtonDisabled == false ) {
+			if ( $active_tab !== 'mappings' || $this->saveMappingsButtonDisabled === false ) {
 				submit_button( sprintf( esc_html__( 'Save %s', 'VONTMNT_mdm' ), $active_tab_name ) );
 			}
 
@@ -532,7 +532,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			}
 
 			// be sure that only a correct server-value will be saved.
-			$options['php_server'] = ( isset( $options['php_server'] ) && ( $options['php_server'] == 'SERVER_NAME' || $options['php_server'] == 'HTTP_HOST' ) ) ? $options['php_server'] : 'SERVER_NAME';
+			$options['php_server'] = ( isset( $options['php_server'] ) && ( $options['php_server'] === 'SERVER_NAME' || $options['php_server'] === 'HTTP_HOST' ) ) ? $options['php_server'] : 'SERVER_NAME';
 
 			return apply_filters( 'VONTMNT_mdmf_save_settings', $options );
 		}
@@ -552,17 +552,17 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 					// only save not empty inputs.
 					$domain = str_ireplace( ']', '', str_ireplace( '[', '', trim( trim( $val['domain'] ), '/' ) ) );
 					$path   = trim( trim( isset( $val['path'] ) ? $val['path'] : '' ), '/' );
-					if ( $domain != ''/* && $path != ''*/ ) {
+					if ( $domain !== '' ) {
 
 						// validate inputs.
-						$parsedDomain = parse_url( $domain );
-						$parsedPath   = parse_url( $path );
-						if ( $parsedDomain != false && $parsedPath != false ) {
+						$parsedDomain = wp_parse_url( $domain );
+						$parsedPath   = wp_parse_url( $path );
+						if ( $parsedDomain !== false && $parsedPath !== false ) {
 
 							// if we get only the host-representation we temporary add a protocol, so we can use the benefit from parse_url to strip the query.
 							// note: this will also be run for each already saved mapping, since we strip the protocol on save...
 							if ( ! isset( $parsedDomain['host'] ) ) {
-								$parsedDomain = parse_url( 'dummyprotocol://' . $domain );
+								$parsedDomain = wp_parse_url( 'dummyprotocol://' . $domain );
 							}
 
 							// save only host name (and path, if provided) with stripped slashes.
@@ -610,7 +610,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 							}
 						}
 						// if we have only one input filled.
-					} elseif ( ! ( $val['domain'] == '' && $val['path'] == '' ) ) {
+					} elseif ( ! ( $val['domain'] === '' && $val['path'] === '' ) ) {
 						// check for existence, since this may be called in an upgrade process earlier, when this is not available yet.
 						if ( function_exists( 'add_settings_error' ) ) {
 							add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_error_code', esc_html__( 'At least one mapping with only one input filled out has been dropped.', 'VONTMNT_mdm' ), 'error' );
@@ -638,7 +638,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		/**
 		 * Change the request, check for matching mappings.
 		 */
-		public function parse_request( $do_parse, $instance, $extra_query_vars ) {
+		public function parse_request( $do_parse, $_instance, $_extra_query_vars ) {
 			// store current request uri as fallback for the originalRequestURI variable, no matter if we have a match or not.
 			$this->setOriginalRequestURI( $_SERVER['REQUEST_URI'] );
 
@@ -684,11 +684,11 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		public function check_canonical_redirect( $redirect_url, $requested_url ) {
 
 			// are we on a mapped page?.
-			if ( $this->getCurrentMapping()['match'] != false ) {
+			if ( $this->getCurrentMapping()['match'] !== false ) {
 
 				// parse the urls.
-				$parsedRedirectUrl  = parse_url( $redirect_url );
-				$parsedRequestedUrl = parse_url( $requested_url );
+				$parsedRedirectUrl  = wp_parse_url( $redirect_url );
+				$parsedRequestedUrl = wp_parse_url( $requested_url );
 
 				// if we have a slug in the domain-part of our mapping like test.com/ball <=> /sports/ball.
 				$explodedMappingDomain = explode( '/', $this->getCurrentMapping()['match']['domain'] );
@@ -698,7 +698,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 					$explodedRedirectUrlPath = explode( '/', $parsedRedirectUrl['path'] );
 
 					// but only as long as they "overlap" (like the "ball"-sequence in the example above).
-					for ( $i = 1;$i < count( $explodedMappingDomain );$i++ ) {
+					$exploded_mapping_domain_count = count( $explodedMappingDomain );
+				for ( $i = 1; $i < $exploded_mapping_domain_count; $i++ ) {
 						if ( isset( $explodedRedirectUrlPath[ $i ] ) && $explodedRedirectUrlPath[ $i ] === $explodedMappingDomain[ $i ] ) {
 							unset( $explodedRedirectUrlPath[ $i ] );
 						}
@@ -709,7 +710,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 				}
 
 				// now compare if those two urls are the same, and skip this redirect if so.
-				if ( trailingslashit( $this->getCurrentMapping()['match']['path'] . $parsedRedirectUrl['path'] ) == trailingslashit( $parsedRequestedUrl['path'] ) ) {
+				if ( trailingslashit( $this->getCurrentMapping()['match']['path'] . $parsedRedirectUrl['path'] ) === trailingslashit( $parsedRequestedUrl['path'] ) ) {
 					return false;
 				}
 			}
@@ -839,7 +840,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 				// we have a matching mapping -> let the magic happen.
 				if ( ! empty( $bestMatch['match'] ) ) {
-					$uriParsed = parse_url( $originalURI );
+					$uriParsed = wp_parse_url( $originalURI );
 					$newURI    = str_ireplace( trailingslashit( $uriParsed['host'] . $bestMatch['match']['path'] ), trailingslashit( $bestMatch['match']['domain'] ), $originalURI );
 					return apply_filters( 'VONTMNT_mdmf_filtered_uri', $newURI, $originalURI, $bestMatch );
 				}
@@ -873,8 +874,8 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 				// we have a matching mapping -> let the magic happen.
 				if ( ! empty( $bestMatch['match'] ) ) {
-					$uriParsed = parse_url( $mapped_uri );
-					$newURI    = str_ireplace( $uriParsed['host'], parse_url( get_home_url() )['host'] . $bestMatch['match']['path'], $mapped_uri );
+					$uriParsed = wp_parse_url( $mapped_uri );
+					$newURI    = str_ireplace( $uriParsed['host'], wp_parse_url( get_home_url() )['host'] . $bestMatch['match']['path'], $mapped_uri );
 					return apply_filters( 'VONTMNT_mdmf_filtered_uri', $newURI, $mapped_uri, $bestMatch );
 				}
 			}
@@ -909,7 +910,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			if ( ! empty( $this->getCurrentMapping()['match'] ) ) {
 				// we need to make sure that we only replace right at the beginning (after the protocol), so we do not destroy subdomains (like img.mydomain.com). that is why we add the :// to the strings.
 				// and we also need to be sure that we do not replace it in a hyperlink which leads to any page on our original domain or to the home page itelsf. so we add a pregex which needs to have any character, a dot and again any character before the next ". that should do the trick....
-				$preg_host = preg_quote( parse_url( get_site_url() )['host'] );
+				$preg_host = preg_quote( wp_parse_url( get_site_url() )['host'], '/' );
 				// to understand the regex, use https://regexr.com/ :).
 				$input = preg_replace_callback( '/:\/\/' . $preg_host . '([^\", ]*(\.)+[^\", ]*)([\"\']|$)/', array( $this, 'replace_domain_in_url' ), $input );
 			}
@@ -924,20 +925,20 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			// check if we are on a mapped page and replace original domain with mapped domain.
 			if ( ! empty( $this->getCurrentMapping()['match'] ) ) {
 				// we need to make sure that we only replace right at the beginning (after the protocol), so we do not destroy subdomains (like img.mydomain.com). that is why we add the :// to the strings.
-				return str_ireplace( '://' . parse_url( get_site_url() )['host'], '://' . parse_url( 'dummyprotocol://' . $this->getCurrentMapping()['match']['domain'] )['host'], $input );
+				return str_ireplace( '://' . wp_parse_url( get_site_url() )['host'], '://' . wp_parse_url( 'dummyprotocol://' . $this->getCurrentMapping()['match']['domain'] )['host'], $input );
 			}
 
 			return $input;
 		}
-		public function replace_yoast_xml_sitemap_post_url( $url, $post ) {
+		public function replace_yoast_xml_sitemap_post_url( $url, $_post ) {
 			// add home url to the posturl, so YOAST will not handle the post like an external url.
 			// this is stripped again in the next filter.
-			if ( trailingslashit( get_home_url() ) != trailingslashit( $url ) ) {
+			if ( trailingslashit( get_home_url() ) !== trailingslashit( $url ) ) {
 				$url = get_home_url() . '/\\' . $this->replace_uri( $url );
 			}
 			return $url;
 		}
-		public function replace_yoast_sitemap_entry( $url, $type, $post ) {
+		public function replace_yoast_sitemap_entry( $url, $type, $_post ) {
 			// true for all post types.
 			if ( $type === 'post' ) {
 				if ( false !== strpos( $url['loc'], '\\' ) ) {
