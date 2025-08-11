@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-main',
-        'version' => 'dev-main',
-        'reference' => 'd5ebeaa3eed4e7a389f301509953cee56afb98f0',
+        'pretty_version' => 'dev-copilot/fix-4831ea35-3078-4982-8220-3bc6e103c5c5',
+        'version' => 'dev-copilot/fix-4831ea35-3078-4982-8220-3bc6e103c5c5',
+        'reference' => '147d80c0d23b24a958aa0db70c35edfe4db467d7',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-main',
-            'version' => 'dev-main',
-            'reference' => 'd5ebeaa3eed4e7a389f301509953cee56afb98f0',
+            'pretty_version' => 'dev-copilot/fix-4831ea35-3078-4982-8220-3bc6e103c5c5',
+            'version' => 'dev-copilot/fix-4831ea35-3078-4982-8220-3bc6e103c5c5',
+            'reference' => '147d80c0d23b24a958aa0db70c35edfe4db467d7',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
