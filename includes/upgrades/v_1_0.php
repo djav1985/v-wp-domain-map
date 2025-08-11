@@ -10,9 +10,6 @@ $oldMappings = get_option('multidomainplugin_options');
 
 if($oldSettings !== false || $oldMappings !== false){
 
-  //prepare admin notice
-  $upgradeAdminNotice = esc_html__( 'Multiple Domain Mapping on single site has performed a database upgrade.', 'VONTMNT_mdm' );
-
   if($oldSettings !== false){
     //prepare new options array
     $options = array();
@@ -24,9 +21,6 @@ if($oldSettings !== false || $oldMappings !== false){
     update_option('VONTMNT_mdm_settings', $options);
     //delete old option, so this will never be executed again
     delete_option('multidomainplugin_tabsettings');
-
-    //prepare admin notice
-    $upgradeAdminNotice .= ' ' . esc_html__( 'Settings have been updated.', 'VONTMNT_mdm' );
   }
   if($oldMappings !== false){
     //prepare new options array
@@ -52,20 +46,6 @@ if($oldSettings !== false || $oldMappings !== false){
     update_option('VONTMNT_mdm_mappings', $options);
     //delete old option, so this will never be executed again
     delete_option('multidomainplugin_options');
-
-    //prepare admin notice
-    $upgradeAdminNotice .= ' ' . esc_html__( 'Mappings have been updated.', 'VONTMNT_mdm' );
   }
 
-  //finalize admin notice
-  $upgradeAdminNotice .= ' ' . sprintf('%s <a href="'.admin_url( 'tools.php?page=' . plugin_basename('multiple--on-single-site/multidomainmapping.php') ).'" title="%s">%s</a> %s.', esc_html__( 'Please head over to the', 'VONTMNT_mdm' ), esc_html__('Multidomain-Settings', 'VONTMNT_mdm'), esc_html__('Multidomain-Settings'), esc_html__('and check if everything is fine', 'VONTMNT_mdm'));
-  $upgradeAdminNotice = '<p>' . $upgradeAdminNotice . '</p>';
-  $upgradeAdminScreenNotice = '<p><strong>'.esc_html__('Please note that some mappings may have been combined, since http/https and www/non-www are now handled in one line. You will need to check if the mappings are still working as you expect them to - do not forget to clear website and browser caches for that purpose.', 'VONTMNT_mdm').'</strong></p>';
-}
-if(isset($upgradeAdminNotice) && !empty($upgradeAdminNotice)){
-  update_option('VONTMNT_mdm_notice', array(
-    'class' => 'notice notice-info',
-    'text' => $upgradeAdminNotice,
-    'onScreenText' => $upgradeAdminScreenNotice
-  ));
 }
