@@ -65,8 +65,6 @@ if( !class_exists( 'VONTMNT_MultipleDomainMapping' ) ){
 
 			//perform database update check
 			require_once(plugin_dir_path( __FILE__ ) . 'includes/upgrades/v_1_0.php');
-			require_once(plugin_dir_path( __FILE__ ) . 'includes/upgrades/latestupgradenotice.php');
-			add_action('admin_init', array($this, 'handleNotices'));
 
 			//retrieve options
 			$this->setMappings(get_option('VONTMNT_mdm_mappings'));
@@ -148,56 +146,6 @@ if( !class_exists( 'VONTMNT_MultipleDomainMapping' ) ){
 			wp_enqueue_script( 'VONTMNT_mdm_adminscript' );
 		}
 
-		//we handle the upgrade notice that may be prepared in the included upgrade-script
-		public function handleNotices(){
-			$generalNotice = get_option('VONTMNT_mdm_notice');
-			if($generalNotice !== false){
-				add_action('admin_notices', array($this, 'outputNotices'));
-			}
-			$upgradeNotice = get_option('VONTMNT_mdm_upgrade_notice');
-			if($upgradeNotice !== false){
-				add_action('admin_notices', array($this, 'outputNotices'));
-			}
-		}
-		public function outputNotices(){
-			$generalNotice = get_option('VONTMNT_mdm_notice');
-			if($generalNotice !== false){
-				//here we can also check the current screen and remove the notice if the user has visited our plugin page once
-				$screen = get_current_screen();
-				if(!is_null($screen)){
-					//plugin page is visited
-					if(stripos( $screen->id, str_ireplace('.php', '', plugin_basename(__FILE__)) ) !== false){
-						delete_option('VONTMNT_mdm_notice');
-						//this one last time we show the extra notice
-						$generalNotice['text'] = $generalNotice['onScreenText'];
-					}
-				}
-
-				//do the output
-				echo '<div class="'.$generalNotice['class'].'">'.$generalNotice['text'].'</div>';
-			}
-
-			$upgradeNotice = get_option('VONTMNT_mdm_upgrade_notice');
-			if($upgradeNotice !== false){
-				//here we can also check the current screen and remove the notice if the user has visited our plugin page once
-				$screen = get_current_screen();
-				if(!is_null($screen)){
-					//plugin page is visited
-					if(stripos( $screen->id, str_ireplace('.php', '', plugin_basename(__FILE__)) ) !== false){
-						delete_option('VONTMNT_mdm_upgrade_notice');
-						//this one last time we show the extra notice
-						$upgradeNotice['text'] = $upgradeNotice['onScreenText'];
-
-						//update our db-hint to the current version now
-						update_option('VONTMNT_mdm_versionhint', $this->pluginVersion);
-					}
-				}
-
-				//do the output
-				echo '<div class="'.$upgradeNotice['class'].'">'.$upgradeNotice['text'].'</div>';
-			}
-		}
-
 		//generate menu entry
 		public function add_menu_page(){
 			// check user capabilities
@@ -216,8 +164,8 @@ if( !class_exists( 'VONTMNT_MultipleDomainMapping' ) ){
 	    }
 
 			//find out active tab
-			$active_tab = (isset($_GET['tab']) && ($_GET['tab'] == 'settings' || $_GET['tab'] == 'advanced' || $_GET['tab'] == 'help' )) ? $_GET['tab'] : 'mappings';
-			$active_tab_name = (isset($_GET['tab']) && ($_GET['tab'] == 'settings' || $_GET['tab'] == 'advanced' || $_GET['tab'] == 'help' )) ? ucfirst($_GET['tab']) : esc_html__('Mappings', 'VONTMNT_mdm');
+			$active_tab = (isset($_GET['tab']) && $_GET['tab'] == 'settings') ? $_GET['tab'] : 'mappings';
+			$active_tab_name = (isset($_GET['tab']) && $_GET['tab'] == 'settings') ? ucfirst($_GET['tab']) : esc_html__('Mappings', 'VONTMNT_mdm');
 
 			echo '<div class="wrap VONTMNT_mdm_wrap">';
 
@@ -241,8 +189,6 @@ if( !class_exists( 'VONTMNT_MultipleDomainMapping' ) ){
 				echo '<h2 class="nav-tab-wrapper">';
 					echo '<a href="?page='. plugin_basename(__FILE__) .'&amp;tab=mappings" class="nav-tab ' . ($active_tab == 'mappings' ? 'nav-tab-active ' : '') . '">' . esc_html__('Mappings', 'VONTMNT_mdm') . '</a>';
 					echo '<a href="?page='. plugin_basename(__FILE__) .'&amp;tab=settings" class="nav-tab ' . ($active_tab == 'settings' ? 'nav-tab-active ' : '') . '">' . esc_html__('Settings', 'VONTMNT_mdm') . '</a>';
-					echo '<a href="?page='. plugin_basename(__FILE__) .'&amp;tab=advanced" class="nav-tab nav-tab-featured ' . ($active_tab == 'advanced' ? 'nav-tab-active ' : '') . '">' . esc_html__('Advanced', 'VONTMNT_mdm') . '</a>';
-					echo '<a href="?page='. plugin_basename(__FILE__) .'&amp;tab=help" class="nav-tab ' . ($active_tab == 'help' ? 'nav-tab-active ' : '') . '">' . esc_html__('Help', 'VONTMNT_mdm') . '</a>';
 				echo '</h2>';
 
 				//main form
@@ -280,29 +226,6 @@ if( !class_exists( 'VONTMNT_MultipleDomainMapping' ) ){
 							do_settings_sections( plugin_basename(__FILE__) );
 							break 1;
 						}
-						case 'advanced':{
-							echo '<h2>Advanced stuff and additional features</h2>';
-							echo '<p><strong>' . __('This plugin is free and the code is open source. While the functionality in the user interface is pretty limited and straight forward, there are ways to build much more with domain mapping:', 'VONTMNT_mdm') . '</strong></p>';
-							echo '<section class="VONTMNT_mdm_advanced_section">';
-								echo '<p><a href="https://domainmappingsystem.com/" target="_blank"><img src="https://ps.w.org/-system/assets/banner-1544x500.jpg" alt="'. __('Domain mapping system banner') .'" /></a></p>';
-								echo '<p>' . sprintf(__('We have partnered with the plugin "Domain Mapping System" to unlock a whole bunch of powerful features for you, also for users with less technical experience.<br /><br /><strong>You can use the coupon code <mark>MDMSPECIAL10</mark> which is exclusive for users of this plugin to save 10&percnt;</strong> and get features like Global Domain Mapping, Category/Archive Mapping, Subdirectory Mapping, and much more!<br /><br />Check their websites and be sure to install their free version first: %s | %s', 'VONTMNT_mdm'), '<a href="https://wordpress.org/plugins/-system/" target="_blank">https://wordpress.org/plugins/-system/</a>', '<a href="https://domainmappingsystem.com/" target="_blank">https://domainmappingsystem.com/</a>') . '</p>';
-							echo '</section>';
-							echo '<section class="VONTMNT_mdm_advanced_section">';
-								echo '<p><a href="https://www.VONTMNTmedia.at/multiple--on-single-site-premium/" target="_blank"><img src="https://ps.w.org/multiple--on-single-site/assets/multidomainmapping-banner-customcode.jpg" alt="'. __('Custom code') .'" /></a></p>';
-								echo '<p>' . __('If you are an experienced developer or can hire one, you can <strong>use actions and filters</strong> which are placed in this plugin to build your own functionality on top of this plugin. This can be anything like custom templates per domain, different icons per domain, cross-domain-tracking with google analytics, ...<br /><br />As long as those actions and filters are not documented well, just look for "VONTMNT_mdma" as action-prefix and "VONTMNT_mdmf" as filter-prefix in our php files.<br /><br />Do you have some ideas for further features to include in our plugins? Are you looking for professional and custom coded projects? <a href="https://www.VONTMNTmedia.at/multiple--on-single-site-premium/" target="_blank">Feel free to reach out to the people behind this plugin :)</a>', 'VONTMNT_mdm') . '</p>';
-							echo '</ul>';
-							break 1;
-						}
-						case 'help':{
-							echo '<h2>' . __('Help for domain mapping', 'VONTMNT_mdm') . '</h2>';
-							echo '<p>'.__('Please refer to the <a href="https://de.wordpress.org/plugins/multiple--on-single-site/" target="_blank">description in the plugin repository</a> for instructions on how the setup the plugin. It will require some good knowledge with domains, hosting-setup and DNS-Records.').'</p>';
-
-							echo '<section class="VONTMNT_mdm_advanced_section">';
-								echo '<p><a href="https://domainmappingsystem.com/" target="_blank"><img src="https://ps.w.org/-system/assets/banner-1544x500.jpg" alt="'. __('Domain mapping system banner') .'" /></a></p>';
-								echo '<p>'.__('Are you looking for <strong>further help</strong> to set up domain mapping on your wordpress site?<br /><br />We highly recommend our partner-plugin "Domain Mapping System" for less experienced users, which offers great support and advanced features in their paid plans.<br /><br /><strong>Dont forget to use your exclusive partner-coupon <mark>MDMSPECIAL10</mark> at their checkout :)</strong>. <a href="https://domainmappingsystem.com/" target="_blank">See all features of Domain Mapping System</a>').'</p>';
-							echo '</section>';
-							break 1;
-						}
 						default:{ //default is our mappings tab
 
 							add_settings_section(
@@ -327,10 +250,8 @@ if( !class_exists( 'VONTMNT_MultipleDomainMapping' ) ){
 					}
 
 					//dynamic submit button
-					if($active_tab != 'help' && $active_tab != 'advanced'){
-						if($active_tab != 'mappings' || $this->saveMappingsButtonDisabled == false){
-							submit_button(sprintf(esc_html__('Save %s', 'VONTMNT_mdm'), $active_tab_name));
-						}
+					if($active_tab != 'mappings' || $this->saveMappingsButtonDisabled == false){
+						submit_button(sprintf(esc_html__('Save %s', 'VONTMNT_mdm'), $active_tab_name));
 					}
 
 				echo '</form>';
@@ -857,10 +778,6 @@ if( !class_exists( 'VONTMNT_MultipleDomainMapping' ) ){
 		//hook into some of our own defined actions
 		public function hookMDMAction(){
 			add_action('VONTMNT_mdma_after_mapping_body', array( $this, 'render_advanced_mapping_inputs'), 10, 2);
-			add_action('VONTMNT_mdma_after_mapping_body', array( $this, 'simple_pro_notice'), 10, 2);
-		}
-		public function simple_pro_notice($cnt, $mapping){
-			if($cnt !== 'new')	echo sprintf('<p class="pro-upgrade-notice">%s <a title="%s" href="?page='. plugin_basename(__FILE__) .'&amp;tab=advanced">%s</a>.</p>', esc_html__('Looking for extra features and settings or professional help?', 'VONTMNT_mdm'), esc_html__('Survey', 'VONTMNT_mdm'), esc_html__('Find out more about our premium plans', 'VONTMNT_mdm'));
 		}
 
 		//check if custom head code is defined for this mapping and output it with html entities decoded, if so...
