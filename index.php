@@ -1,2 +1,1 @@
-<?php
-// that's all
+<?php// that's all
