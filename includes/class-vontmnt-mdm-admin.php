@@ -29,7 +29,7 @@ class VONTMNT_MDM_Admin {
 	 *
 	 * @var bool
 	 */
-	private $saveMappingsButtonDisabled = false;
+	private $save_mappings_button_disabled = false;
 
 	/**
 	 * Constructor.
@@ -55,8 +55,8 @@ class VONTMNT_MDM_Admin {
 	 */
 	public function admin_scripts() {
 		// custom assets.
-		wp_enqueue_style( 'VONTMNT_mdm_adminstyle', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin.css', array(), $this->plugin->getPluginVersion() );
-		wp_register_script( 'VONTMNT_mdm_adminscript', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/admin.js', array( 'jquery', 'jquery-ui-accordion' ), $this->plugin->getPluginVersion(), true );
+		wp_enqueue_style( 'VONTMNT_mdm_adminstyle', plugin_dir_url( __DIR__ ) . 'assets/css/admin.css', array(), $this->plugin->getPluginVersion() );
+		wp_register_script( 'VONTMNT_mdm_adminscript', plugin_dir_url( __DIR__ ) . 'assets/js/admin.js', array( 'jquery', 'jquery-ui-accordion' ), $this->plugin->getPluginVersion(), true );
 		wp_localize_script(
 			'VONTMNT_mdm_adminscript',
 			'localizedObj',
@@ -101,6 +101,7 @@ class VONTMNT_MDM_Admin {
 
 			// updated notices.
 		if ( isset( $_GET['settings-updated'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			// translators: %s: The name of the active tab (e.g., "Mappings" or "Settings").
 			add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_message', sprintf( esc_html__( '%s saved', 'VONTMNT_mdm' ), $active_tab_name ), 'updated' );
 
 			// flush rewrite rules on each update of our settings/mappings, just to be sure...
@@ -114,29 +115,28 @@ class VONTMNT_MDM_Admin {
 
 			// tabs.
 			echo '<h2 class="nav-tab-wrapper">';
-				echo '<a href="?page=vontmnt-multidomain-mapping&amp;tab=mappings" class="nav-tab ' . ( $active_tab === 'mappings' ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Mappings', 'VONTMNT_mdm' ) . '</a>';
-				echo '<a href="?page=vontmnt-multidomain-mapping&amp;tab=settings" class="nav-tab ' . ( $active_tab === 'settings' ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Settings', 'VONTMNT_mdm' ) . '</a>';
+				echo '<a href="?page=vontmnt-multidomain-mapping&amp;tab=mappings" class="nav-tab ' . ( 'mappings' === $active_tab ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Mappings', 'VONTMNT_mdm' ) . '</a>';
+				echo '<a href="?page=vontmnt-multidomain-mapping&amp;tab=settings" class="nav-tab ' . ( 'settings' === $active_tab ? 'nav-tab-active ' : '' ) . '">' . esc_html__( 'Settings', 'VONTMNT_mdm' ) . '</a>';
 			echo '</h2>';
 
 			// main form.
 			echo '<form action="options.php" method="post">';
 
 				// inputs based on current tab.
-		switch ( $active_tab ) {
+		switch ( $active_tab ) :
 			case 'settings':
-				{
 				add_settings_section(
 					'VONTMNT_mdm_section_settings',
 					esc_html__( 'Domain mapping settings', 'VONTMNT_mdm' ),
 					array( $this, 'section_settings_callback' ),
-					plugin_basename( dirname( dirname( __FILE__ ) ) . '/multi-domain-mapping.php' )
+					plugin_basename( dirname( __DIR__ ) . '/multi-domain-mapping.php' )
 				);
 
 				add_settings_field(
 					'VONTMNT_mdm_field_settings_phpserver',
 					esc_html__( 'PHP Server-Variable:', 'VONTMNT_mdm' ),
 					array( $this, 'field_settings_phpserver_callback' ),
-					plugin_basename( dirname( dirname( __FILE__ ) ) . '/multi-domain-mapping.php' ),
+					plugin_basename( dirname( __DIR__ ) . '/multi-domain-mapping.php' ),
 					'VONTMNT_mdm_section_settings'
 				);
 
@@ -144,42 +144,41 @@ class VONTMNT_MDM_Admin {
 					'VONTMNT_mdm_field_settings_compatibilitymode',
 					esc_html__( 'Enhanced compatibility mode:', 'VONTMNT_mdm' ),
 					array( $this, 'field_settings_compatibilitymode_callback' ),
-					plugin_basename( dirname( dirname( __FILE__ ) ) . '/multi-domain-mapping.php' ),
+					plugin_basename( dirname( __DIR__ ) . '/multi-domain-mapping.php' ),
 					'VONTMNT_mdm_section_settings'
 				);
 
-				do_action( 'VONTMNT_mdma_settings_tab' );
+				do_action( 'vontmnt_mdma_settings_tab' );
 
 				settings_fields( 'VONTMNT_mdm_settings_group' );
-				do_settings_sections( plugin_basename( dirname( dirname( __FILE__ ) ) . '/multi-domain-mapping.php' ) );
+				do_settings_sections( plugin_basename( dirname( __DIR__ ) . '/multi-domain-mapping.php' ) );
 				break;
-			}
 			default:
-				{ // default is our mappings tab.
+				// default is our mappings tab.
 
 				add_settings_section(
 					'VONTMNT_mdm_section_mappings',
 					esc_html__( 'Domain mappings', 'VONTMNT_mdm' ),
 					array( $this, 'section_mappings_callback' ),
-					plugin_basename( dirname( dirname( __FILE__ ) ) . '/multi-domain-mapping.php' )
+					plugin_basename( dirname( __DIR__ ) . '/multi-domain-mapping.php' )
 				);
 
 				add_settings_field(
 					'VONTMNT_mdm_field_mappings_uris',
 					esc_html__( 'Define your mappings here:', 'VONTMNT_mdm' ),
 					array( $this, 'field_mappings_uris_callback' ),
-					plugin_basename( dirname( dirname( __FILE__ ) ) . '/multi-domain-mapping.php' ),
+					plugin_basename( dirname( __DIR__ ) . '/multi-domain-mapping.php' ),
 					'VONTMNT_mdm_section_mappings'
 				);
 				settings_fields( 'VONTMNT_mdm_mappings_group' );
-				do_settings_sections( plugin_basename( dirname( dirname( __FILE__ ) ) . '/multi-domain-mapping.php' ) );
+				do_settings_sections( plugin_basename( dirname( __DIR__ ) . '/multi-domain-mapping.php' ) );
 
 				break;
-			}
-		}
+		endswitch;
 
 				// dynamic submit button.
-		if ( $active_tab !== 'mappings' || $this->saveMappingsButtonDisabled === false ) {
+		if ( 'mappings' !== $active_tab || false === $this->saveMappingsButtonDisabled ) {
+			// translators: %s: The name of the active tab (e.g., "Mappings" or "Settings").
 			submit_button( sprintf( esc_html__( 'Save %s', 'VONTMNT_mdm' ), $active_tab_name ) );
 		}
 
@@ -275,7 +274,7 @@ class VONTMNT_MDM_Admin {
 		if ( isset( $options['mappings'] ) && ! empty( $options['mappings'] ) ) {
 			$cnt = 0;
 			foreach ( $options['mappings'] as $mapping ) {
-				echo '<article class="' . esc_attr( apply_filters( 'VONTMNT_mdmf_mapping_class', 'VONTMNT_mdm_mapping' ) ) . '">';
+				echo '<article class="' . esc_attr( apply_filters( 'vontmnt_mdmf_mapping_class', 'VONTMNT_mdm_mapping' ) ) . '">';
 					echo '<div class="VONTMNT_mdm_mapping_header">';
 						echo '<div><div class="VONTMNT_mdm_input_wrap"><span class="VONTMNT_mdm_input_prefix">http[s]://</span><input type="text" name="VONTMNT_mdm_mappings[cnt_' . esc_attr( $cnt ) . '][domain]" value="' . esc_attr( $mapping['domain'] ) . '" /></div></div>';
 						echo '<div class="VONTMNT_mdm_mapping_arrow">&raquo;</div>';
@@ -283,7 +282,7 @@ class VONTMNT_MDM_Admin {
 					echo '</div>';
 					echo '<div class="VONTMNT_mdm_mapping_body">';
 						echo '<span class="VONTMNT_mdm_mapping_body_icon VONTMNT_mdm_delete_mapping"><a href="#" title="' . esc_attr__( 'Remove mapping', 'VONTMNT_mdm' ) . '">' . esc_html__( 'Remove mapping', 'VONTMNT_mdm' ) . ' <i>&cross;</i></a></span>';
-						echo wp_kses_post( do_action( 'VONTMNT_mdma_after_mapping_body', $cnt, $mapping ) );
+						echo wp_kses_post( do_action( 'vontmnt_mdma_after_mapping_body', $cnt, $mapping ) );
 					echo '</div>';
 				echo '</article>';
 				++$cnt;
@@ -292,25 +291,26 @@ class VONTMNT_MDM_Admin {
 		echo '</section>';
 
 		echo '<section class="VONTMNT_mdm_new_mapping">';
-			echo '<article class="' . esc_attr( apply_filters( 'VONTMNT_mdmf_mapping_class', 'VONTMNT_mdm_mapping VONTMNT_mdm_mapping_new' ) ) . '">';
+			echo '<article class="' . esc_attr( apply_filters( 'vontmnt_mdmf_mapping_class', 'VONTMNT_mdm_mapping VONTMNT_mdm_mapping_new' ) ) . '">';
 				echo '<div class="VONTMNT_mdm_mapping_header">';
 					echo '<div><div class="VONTMNT_mdm_input_wrap"><span class="VONTMNT_mdm_input_prefix">http[s]://</span><input type="text" name="VONTMNT_mdm_mappings[cnt_new][domain]" placeholder="[www.]newdomain.com" /></div><div class="VONTMNT_mdm_input_hint">' . esc_html__( 'Enter the domain you want to map.', 'VONTMNT_mdm' ) . '</div></div>';
 					echo '<div class="VONTMNT_mdm_mapping_arrow">&raquo;</div>';
 					echo '<div><div class="VONTMNT_mdm_input_wrap"><span class="VONTMNT_mdm_input_prefix">' . esc_html( get_home_url() ) . '</span><input type="text" name="VONTMNT_mdm_mappings[cnt_new][path]" placeholder="/mappedpage" /></div><div class="VONTMNT_mdm_input_hint">' . esc_html__( 'Enter the path to the desired root for this mapping', 'VONTMNT_mdm' ) . '</div></div>';
 				echo '</div>';
 				echo '<div class="VONTMNT_mdm_mapping_body">';
-					echo wp_kses_post( do_action( 'VONTMNT_mdma_after_mapping_body', 'new', false ) );
+					echo wp_kses_post( do_action( 'vontmnt_mdma_after_mapping_body', 'new', false ) );
 				echo '</div>';
 			echo '</article>';
 		echo '</section>';
 
 		// calculate and maybe show warning for higher max_input_vars needed.
-		$numberOfSettings = 3; // this must be changed when additional input fields emerge.
-		if ( $cnt >= ( intval( ini_get( 'max_input_vars' ) ) / $numberOfSettings - 100 ) ) {
+		$number_of_settings = 3; // this must be changed when additional input fields emerge.
+		if ( $cnt >= ( intval( ini_get( 'max_input_vars' ) ) / $number_of_settings - 100 ) ) {
 			$this->saveMappingsButtonDisabled = true;
 			echo '<section class="notice notice-error">';
 				echo '<p>';
-					printf( esc_html__( 'WATCH OUT! Your server is configured to allow a maximum number of %1$s as %2$s. Each of the currently defined %3$s mapping(s) requires %4$s of these input vars when saving this site (%5$s). Depending on your other plugins, some dozens of these input vars will also be used by WordPress itself. If you want to save more mappings, you will need to configure your server for a higher value of %6$s.', 'VONTMNT_mdm' ), esc_html( ini_get( 'max_input_vars' ) ), '<em>max_input_vars</em>', esc_html( $cnt ), esc_html( $numberOfSettings ), esc_html( $cnt . ' x ' . $numberOfSettings . ' = ' . ( $cnt * $numberOfSettings ) ), '<em>max_input_vars</em>' );
+					// translators: 1: max_input_vars value, 2: <em>max_input_vars</em>, 3: number of mappings, 4: input vars per mapping, 5: total input vars, 6: <em>max_input_vars</em>.
+					printf( esc_html__( 'WATCH OUT! Your server is configured to allow a maximum number of %1$s as %2$s. Each of the currently defined %3$s mapping(s) requires %4$s of these input vars when saving this site (%5$s). Depending on your other plugins, some dozens of these input vars will also be used by WordPress itself. If you want to save more mappings, you will need to configure your server for a higher value of %6$s.', 'VONTMNT_mdm' ), esc_html( ini_get( 'max_input_vars' ) ), '<em>max_input_vars</em>', esc_html( $cnt ), esc_html( $number_of_settings ), esc_html( $cnt . ' x ' . $number_of_settings . ' = ' . ( $cnt * $number_of_settings ) ), '<em>max_input_vars</em>' );
 					echo ' <a href="https://duckduckgo.com/?q=php+increase+max_input_vars" target="_blank">' . esc_html__( 'Find out how to fix this issue (external link)', 'VONTMNT_mdm' ) . '</a>';
 				echo '</p>';
 				echo '<p>';
@@ -327,7 +327,7 @@ class VONTMNT_MDM_Admin {
 	 * @param array|bool $mapping The mapping array.
 	 */
 	public function render_advanced_mapping_inputs( $cnt, $mapping ) {
-		if ( $cnt === 'new' ) {
+		if ( 'new' === $cnt ) {
 			return;
 		}
 

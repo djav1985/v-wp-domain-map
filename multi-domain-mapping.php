@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Multiple Domain Mapping 
+ * Plugin Name: Multiple Domain Mapping
  * Plugin URI:  https://wordpress.org/plugins/multiple--on-single-site/
  * Description: Show specific posts, pages, ... within their own, additional domains. Useful for SEO: different domains for landingpages.
  * Version:     1.1.1
@@ -37,8 +37,8 @@ if ( ! defined( 'PHP_INT_MIN' ) ) {
 }
 
 // Load our classes.
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-vontmnt-mdm-admin.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mdm-core.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-mdm-admin.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-mdm-replacer.php';
 
 if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
@@ -323,10 +323,17 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			}
 
 			// be sure that only a correct server-value will be saved.
-			$options['php_server'] = ( isset( $options['php_server'] ) && ( $options['php_server'] === 'SERVER_NAME' || $options['php_server'] === 'HTTP_HOST' ) ) ? $options['php_server'] : 'SERVER_NAME';
+			$options['php_server'] = ( isset( $options['php_server'] ) && ( 'SERVER_NAME' === $options['php_server'] || 'HTTP_HOST' === $options['php_server'] ) ) ? $options['php_server'] : 'SERVER_NAME';
 
-			return apply_filters( 'VONTMNT_mdmf_save_settings', $options );
+			return apply_filters( 'vontmnt_mdmf_save_settings', $options );
 		}
+
+		/**
+		 * Sanitize mappings options before saving.
+		 *
+		 * @param array $options Raw options from the screen.
+		 * @return array Sanitized options.
+		 */
 		public function sanitize_mappings_group( $options ) {
 			// do nothing on empty input.
 			if ( empty( $options ) ) {
@@ -338,17 +345,17 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 
 			foreach ( $options as $key => $val ) {
 				// search for mappings and prepare them for database.
-				if ( stripos( $key, 'cnt_' ) !== false ) {
+				if ( false !== stripos( $key, 'cnt_' ) ) {
 
 					// only save not empty inputs.
 					$domain = str_ireplace( ']', '', str_ireplace( '[', '', trim( trim( $val['domain'] ), '/' ) ) );
 					$path   = trim( trim( isset( $val['path'] ) ? $val['path'] : '' ), '/' );
-					if ( $domain !== '' ) {
+					if ( '' !== $domain ) {
 
 						// validate inputs.
 						$parsedDomain = wp_parse_url( $domain );
 						$parsedPath   = wp_parse_url( $path );
-						if ( $parsedDomain !== false && $parsedPath !== false ) {
+						if ( false !== $parsedDomain && false !== $parsedPath ) {
 
 							// if we get only the host-representation we temporary add a protocol, so we can use the benefit from parse_url to strip the query.
 							// note: this will also be run for each already saved mapping, since we strip the protocol on save...
@@ -387,25 +394,19 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 							if ( $saveMapping ) {
 								// mapping should be saved and is filtered before.
 								// use domain as index, so we do not have any duplicates -> this index will never be used or stored, but we convert it to md5 so it can not be confusing later.
-								$mappings[ md5( $val['domain'] ) ] = apply_filters( 'VONTMNT_mdmf_save_mapping', $val );
-							} else {
+								$mappings[ md5( $val['domain'] ) ] = apply_filters( 'vontmnt_mdmf_save_mapping', $val );
+							} elseif ( function_exists( 'add_settings_error' ) ) {
 								// check for existence, since this may be called in an upgrade process earlier, when this is not available yet.
-								if ( function_exists( 'add_settings_error' ) ) {
-									add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_error_code', esc_html__( 'At least one mapping with duplicate domain or path has been dropped.', 'VONTMNT_mdm' ), 'error' );
-								}
+								add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_error_code', esc_html__( 'At least one mapping with duplicate domain or path has been dropped.', 'VONTMNT_mdm' ), 'error' );
 							}
-						} else {
+						} elseif ( function_exists( 'add_settings_error' ) ) {
 							// check for existence, since this may be called in an upgrade process earlier, when this is not available yet.
-							if ( function_exists( 'add_settings_error' ) ) {
-								add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_error_code', esc_html__( 'At least one mapping with bad URL format has been dropped.', 'VONTMNT_mdm' ), 'error' );
-							}
+							add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_error_code', esc_html__( 'At least one mapping with bad URL format has been dropped.', 'VONTMNT_mdm' ), 'error' );
 						}
 						// if we have only one input filled.
-					} elseif ( ! ( $val['domain'] === '' && $val['path'] === '' ) ) {
+					} elseif ( ! ( '' === $val['domain'] && '' === $val['path'] ) && function_exists( 'add_settings_error' ) ) {
 						// check for existence, since this may be called in an upgrade process earlier, when this is not available yet.
-						if ( function_exists( 'add_settings_error' ) ) {
-							add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_error_code', esc_html__( 'At least one mapping with only one input filled out has been dropped.', 'VONTMNT_mdm' ), 'error' );
-						}
+						add_settings_error( 'VONTMNT_mdm_messages', 'VONTMNT_mdm_error_code', esc_html__( 'At least one mapping with only one input filled out has been dropped.', 'VONTMNT_mdm' ), 'error' );
 					}
 					// remove original mapping (cnt_) from options array.
 					unset( $options[ $key ] );
@@ -420,17 +421,25 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 				$options['mappings'] = $mappings;
 			}
 
-			return apply_filters( 'VONTMNT_mdmf_save_mappings', $options );
+			return apply_filters( 'vontmnt_mdmf_save_mappings', $options );
 		}
+
+		/**
+		 * Sort helper for mappings.
+		 *
+		 * @param array $a First item to compare.
+		 * @param array $b Second item to compare.
+		 * @return int
+		 */
 		private function mappings_sort_helper( $a, $b ) {
-			return strcmp( $a[ apply_filters( 'VONTMNT_mdmf_mapping_sort', 'domain' ) ], $b[ apply_filters( 'VONTMNT_mdmf_mapping_sort', 'domain' ) ] );
+			return strcmp( $a[ apply_filters( 'vontmnt_mdmf_mapping_sort', 'domain' ) ], $b[ apply_filters( 'vontmnt_mdmf_mapping_sort', 'domain' ) ] );
 		}
 
 		/**
 		 * Hook into some of our own defined actions.
 		 */
 		public function hookMDMAction() {
-			add_action( 'VONTMNT_mdma_after_mapping_body', array( $this->admin, 'render_advanced_mapping_inputs' ), 10, 2 );
+			add_action( 'vontmnt_mdma_after_mapping_body', array( $this->admin, 'render_advanced_mapping_inputs' ), 10, 2 );
 		}
 
 		/**
@@ -440,7 +449,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			if ( ! empty( $this->getCurrentMapping()['match'] ) ) {
 				if ( ! empty( $this->getCurrentMapping()['match']['customheadcode'] ) ) {
 					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped.
-					echo html_entity_decode( $this->getCurrentMapping()['match']['customheadcode'] );
+					echo wp_kses_post( html_entity_decode( $this->getCurrentMapping()['match']['customheadcode'] ) );
 				}
 			}
 		}

@@ -125,10 +125,10 @@ class VONTMNT_MDM_Replacer {
 				// first use our standard matching function.
 				$matchCompare = $this->plugin->getCore()->uri_match( $originalURI, $mapping, false );
 				// then enable custom matching by filtering.
-				$matchCompare = apply_filters( 'VONTMNT_mdmf_uri_match', $matchCompare, $originalURI, $mapping, false );
+				$matchCompare = apply_filters( 'vontmnt_mdmf_uri_match', $matchCompare, $originalURI, $mapping, false );
 
 				// if the current mapping fits better, use this instead the previous one.
-				if ( $matchCompare !== false && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $bestMatch['factor'] ) {
+				if ( false !== $matchCompare && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $bestMatch['factor'] ) {
 					$bestMatch = $matchCompare;
 				}
 			}
@@ -137,7 +137,7 @@ class VONTMNT_MDM_Replacer {
 			if ( ! empty( $bestMatch['match'] ) ) {
 				$uriParsed = wp_parse_url( $originalURI );
 				$newURI    = str_ireplace( trailingslashit( $uriParsed['host'] . $bestMatch['match']['path'] ), trailingslashit( $bestMatch['match']['domain'] ), $originalURI );
-				return apply_filters( 'VONTMNT_mdmf_filtered_uri', $newURI, $originalURI, $bestMatch );
+				return apply_filters( 'vontmnt_mdmf_filtered_uri', $newURI, $originalURI, $bestMatch );
 			}
 		}
 
@@ -166,10 +166,10 @@ class VONTMNT_MDM_Replacer {
 				$matchCompare = $this->plugin->getCore()->uri_match( $mapped_uri, $mapping, true );
 
 				// then enable custom matching by filtering.
-				$matchCompare = apply_filters( 'VONTMNT_mdmf_uri_match', $matchCompare, $mapped_uri, $mapping, true );
+				$matchCompare = apply_filters( 'vontmnt_mdmf_uri_match', $matchCompare, $mapped_uri, $mapping, true );
 
 				// if the current mapping fits better, use this instead the previous one.
-				if ( $matchCompare !== false && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $bestMatch['factor'] ) {
+				if ( false !== $matchCompare && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $bestMatch['factor'] ) {
 					$bestMatch = $matchCompare;
 				}
 			}
@@ -178,7 +178,7 @@ class VONTMNT_MDM_Replacer {
 			if ( ! empty( $bestMatch['match'] ) ) {
 				$uriParsed = wp_parse_url( $mapped_uri );
 				$newURI    = str_ireplace( $uriParsed['host'], wp_parse_url( get_home_url() )['host'] . $bestMatch['match']['path'], $mapped_uri );
-				return apply_filters( 'VONTMNT_mdmf_filtered_uri', $newURI, $mapped_uri, $bestMatch );
+				return apply_filters( 'vontmnt_mdmf_filtered_uri', $newURI, $mapped_uri, $bestMatch );
 			}
 		}
 
@@ -292,7 +292,7 @@ class VONTMNT_MDM_Replacer {
 	 */
 	public function replace_yoast_sitemap_entry( $url, $type ) {
 		// true for all post types.
-		if ( $type === 'post' ) {
+		if ( 'post' === $type ) {
 			if ( false !== strpos( $url['loc'], '\\' ) ) {
 				$tmp        = explode( '\\', $url['loc'] );
 				$url['loc'] = $tmp[1];

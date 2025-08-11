@@ -66,10 +66,10 @@ class VONTMNT_MDM_Core {
 				// first use our standard matching function.
 				$matchCompare = $this->uri_match( $this->plugin->getCurrentURI(), $mapping, true );
 				// then enable custom matching by filtering.
-				$matchCompare = apply_filters( 'VONTMNT_mdmf_uri_match', $matchCompare, $this->plugin->getCurrentURI(), $mapping, true );
+				$matchCompare = apply_filters( 'vontmnt_mdmf_uri_match', $matchCompare, $this->plugin->getCurrentURI(), $mapping, true );
 
 				// if the current mapping fits better, use this instead the previous one.
-				if ( $matchCompare !== false && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $this->plugin->getCurrentMapping()['factor'] ) {
+				if ( false !== $matchCompare && isset( $matchCompare['factor'] ) && $matchCompare['factor'] > $this->plugin->getCurrentMapping()['factor'] ) {
 					$this->plugin->setCurrentMapping( $matchCompare );
 				}
 			}
@@ -81,7 +81,7 @@ class VONTMNT_MDM_Core {
 				// set request uri to our original mapping path AND if we have a longer query, we need to append it.
 				$newRequestURI = trailingslashit( $this->plugin->getCurrentMapping()['match']['path'] . substr( str_ireplace( 'www.', '', $this->plugin->getCurrentURI() ), strlen( str_ireplace( 'www.', '', $this->plugin->getCurrentMapping()['match']['domain'] ) ) ) );
 				// enable additional filtering on the request_uri.
-				$_SERVER['REQUEST_URI'] = apply_filters( 'VONTMNT_mdmf_request_uri', $newRequestURI, $this->plugin->getCurrentURI(), $this->plugin->getCurrentMapping() );
+				$_SERVER['REQUEST_URI'] = apply_filters( 'vontmnt_mdmf_request_uri', $newRequestURI, $this->plugin->getCurrentURI(), $this->plugin->getCurrentMapping() );
 			}
 		}
 
@@ -99,7 +99,7 @@ class VONTMNT_MDM_Core {
 	public function check_canonical_redirect( $redirect_url, $requested_url ) {
 
 		// are we on a mapped page?.
-		if ( $this->plugin->getCurrentMapping()['match'] !== false ) {
+		if ( false !== $this->plugin->getCurrentMapping()['match'] ) {
 
 			// parse the urls.
 			$parsedRedirectUrl  = wp_parse_url( $redirect_url );
@@ -161,7 +161,7 @@ class VONTMNT_MDM_Core {
 
 		// check if arg2 is part of uri and starts where we want to.
 		$matchingPos = stripos( trailingslashit( $uri ), trailingslashit( $arg2 ) );
-		if ( $matchingPos !== false && $matchingPos === $matchingPosCompare ) {
+		if ( false !== $matchingPos && $matchingPosCompare === $matchingPos ) {
 			// use length of match as factor.
 			return array(
 				'match'  => $mapping,

@@ -2,6 +2,9 @@
 <ruleset name="WordPress">
 	<description>WordPress Coding Standards</description>
 
+	<!-- Check for cross-version support for PHP 7.4 and higher. -->
+	<config name="testVersion" value="7.4-"/>
+
 	<rule ref="WordPress-Core">
 		<exclude name="Generic.WhiteSpace.ScopeIndent.IncorrectExact"/>
 	</rule>
