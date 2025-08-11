@@ -140,7 +140,7 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 		private function __construct() {
 
 			// Perform database update check.
-			require_once plugin_dir_path( __FILE__ ) . 'includes/upgrades/v_1_0.php';
+			require_once plugin_dir_path( __FILE__ ) . 'includes/upgrades/v-1-0.php';
 
 			// Retrieve options.
 			$this->setMappings( get_option( 'VONTMNT_mdm_mappings' ) );
