@@ -11,6 +11,8 @@
  * Text Domain: VONTMNT_mdm
  * Domain Path: /languages
  *
+ * @package VONTMNT_mdm
+ *
  * Multiple Domain Mapping on single site is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 2 of the License, or
@@ -130,58 +132,130 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			add_filter( 'do_parse_request', array( $this, 'parse_request' ), 10, 3 );
 			add_filter( 'redirect_canonical', array( $this, 'check_canonical_redirect' ), 10, 2 );
 
-			// some hooks to change occurences of orignal domain to mapped domain
+			// Some hooks to change occurences of orignal domain to mapped domain.
 			$this->replace_uris();
 
-			// hook some stuff into our own actions
+			// Hook some stuff into our own actions.
 			add_action( 'plugins_loaded', array( $this, 'hookMDMAction' ), 20 );
 
-			// html head
+			// HTML head.
 			add_action( 'wp_head', array( $this, 'output_custom_head_code' ), 20 );
 		}
 
-		// setters/getters
+		/**
+		 * Setters/getters.
+		 */
+
+		/**
+		 * Set mappings.
+		 *
+		 * @param array|false $mappings The mappings array.
+		 */
 		private function setMappings( $mappings ) {
 			$this->mappings = $mappings;
 		}
+
+		/**
+		 * Get mappings.
+		 *
+		 * @return array|false
+		 */
 		public function getMappings() {
 			return $this->mappings;
 		}
+
+		/**
+		 * Set settings.
+		 *
+		 * @param array|false $settings The settings array.
+		 */
 		private function setSettings( $settings ) {
 			$this->settings = $settings;
 		}
+
+		/**
+		 * Get settings.
+		 *
+		 * @return array|false
+		 */
 		public function getSettings() {
 			return $this->settings;
 		}
+
+		/**
+		 * Set current URI.
+		 *
+		 * @param string $uri The URI to set.
+		 */
 		private function setCurrentURI( $uri ) {
 			$this->currentURI = trailingslashit( $uri );
 		}
+
+		/**
+		 * Get current URI.
+		 *
+		 * @return string|false
+		 */
 		public function getCurrentURI() {
 			return $this->currentURI;
 		}
+
+		/**
+		 * Set current mapping.
+		 *
+		 * @param array $mapping The mapping array.
+		 */
 		private function setCurrentMapping( $mapping ) {
 			$this->currentMapping = $mapping;
 		}
+
+		/**
+		 * Get current mapping.
+		 *
+		 * @return array
+		 */
 		public function getCurrentMapping() {
 			return $this->currentMapping;
 		}
+
+		/**
+		 * Set original request URI.
+		 *
+		 * @param string $uri The URI to set.
+		 */
 		private function setOriginalRequestURI( $uri ) {
 			$this->originalRequestURI = $uri;
 		}
+
+		/**
+		 * Get original request URI.
+		 *
+		 * @return string|false
+		 */
 		public function getOriginalRequestURI() {
 			return $this->originalRequestURI;
 		}
+
+		/**
+		 * Get original URI.
+		 *
+		 * @return string
+		 */
 		public function getOriginalURI() {
 			global $wp;
 			return home_url( $wp->request );
 		}
 
-		// set textdomain
+		/**
+		 * Set textdomain.
+		 */
 		public function set_textdomain() {
 			load_plugin_textdomain( 'VONTMNT_mdm', false, dirname( plugin_basename( plugin_basename( __FILE__ ) ) ) . '/languages/' );
 		}
 
-		// enqueue scripts and styles in admin
+		/**
+		 * Enqueue scripts and styles in admin.
+		 */
 		public function admin_scripts() {
 			// custom assets
 			wp_enqueue_style( 'VONTMNT_mdm_adminstyle', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css', array(), $this->pluginVersion );
@@ -861,15 +935,20 @@ if ( ! class_exists( 'VONTMNT_MultipleDomainMapping' ) ) {
 			return $this->unreplace_uri( $unescaped_preview_url );
 		}
 
-		// hook into some of our own defined actions
+		/**
+		 * Hook into some of our own defined actions.
+		 */
 		public function hookMDMAction() {
 			add_action( 'VONTMNT_mdma_after_mapping_body', array( $this, 'render_advanced_mapping_inputs' ), 10, 2 );
 		}
 
-		// check if custom head code is defined for this mapping and output it with html entities decoded, if so...
+		/**
+		 * Check if custom head code is defined for this mapping and output it with html entities decoded, if so.
+		 */
 		public function output_custom_head_code() {
 			if ( ! empty( $this->getCurrentMapping()['match'] ) ) {
 				if ( ! empty( $this->getCurrentMapping()['match']['customheadcode'] ) ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					echo html_entity_decode( $this->getCurrentMapping()['match']['customheadcode'] );
 				}
 			}
